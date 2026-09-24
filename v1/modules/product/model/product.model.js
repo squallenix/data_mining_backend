@@ -327,12 +327,10 @@ const productSchema = new mongoose.Schema(
 productSchema.pre("validate", function (next) {
   if (!this.productSlug && this.name) {
     this.productSlug = String(this.name)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
-
-  next();
 });
 
 const Product = mongoose.model("Product", productSchema);
