@@ -100,10 +100,19 @@ export const createProductSchema = Joi.object({
     "any.required": "Product name is required",
   }),
 
-  slug: Joi.string().trim().required().messages({
-    "string.base": "Product slug must be a string",
-    "string.empty": "Product slug is required",
-    "any.required": "Product slug is required",
+  productSlug: Joi.string()
+    .trim()
+    .lowercase()
+    .required()
+    .messages({
+      "string.base": "Product slug must be a string",
+      "string.empty": "Product slug is required",
+      "any.required": "Product slug is required",
+    }),
+
+  tags: Joi.array().items(Joi.string().trim().max(50)).default([]).messages({
+    "array.base": "Tags must be an array of strings",
+    "string.base": "Tag must be a string",
   }),
 
   description: Joi.string().allow("").default("").messages({
@@ -298,6 +307,6 @@ export const createProductSchema = Joi.object({
 });
 
 export const updateProductSchema = createProductSchema.fork(
-  ["name", "slug", "price"],
+  ["name", "productSlug", "price"],
   (schema) => schema.optional(),
 );

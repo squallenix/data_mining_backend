@@ -12,6 +12,16 @@ export const getProducts = async () => {
   return products;
 };
 
+export const getProductBySlug = async (productSlug) => {
+  const product = await Product.findOne({ productSlug });
+
+  if (!product) {
+    throw new AppError("Product not found", 404);
+  }
+
+  return product;
+};
+
 export const getProductById = async (id) => {
   const product = await Product.findById(id);
 

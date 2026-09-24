@@ -113,11 +113,17 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-    slug: {
+    productSlug: {
       type: String,
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
+    },
+
+    tags: {
+      type: [String],
+      default: [],
     },
 
     description: {
@@ -315,6 +321,19 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Normalize a name into a URL-safe slug and fill productSlug
+// if the caller did not provide one.
+productSchema.pre("validate", function (next) {
+  if (!this.productSlug && this.name) {
+    this.productSlug = String(this.name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  }
+
+  next();
+});
 
 const Product = mongoose.model("Product", productSchema);
 
