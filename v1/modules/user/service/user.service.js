@@ -1,6 +1,6 @@
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-
+import { AppError } from "../../../utils/AppError.js";
 import User from "../model/user.model.js";
 
 const generateAccessToken = (user) => {
@@ -20,7 +20,7 @@ export const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    throw new Error("Email is already registered");
+    throw new AppError("Email is already registered", 400);
   }
 
   const hashedPassword = await argon2.hash(password);
@@ -46,17 +46,17 @@ export const loginUser = async ({ email, password }) => {
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password", 401);
   }
 
   const isPasswordValid = await argon2.verify(user.password, password);
 
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password", 401);
   }
 
   if (!user.isActive) {
-    throw new Error("Your account is inactive");
+    throw new AppError("Your account is inactive", 401);
   }
 
   const accessToken = generateAccessToken(user);
