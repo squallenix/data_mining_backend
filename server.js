@@ -8,12 +8,13 @@ import helmet from "helmet";
 
 import { connectDB } from "./config/db.js";
 import router from "./route.js";
-
+import { errorHandler } from "./v1/middleware/error.middleware.js";
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 const port = process.env.PORT || 8000;
 // middlewares
 app.use(cors());
+app.use(errorHandler);
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(helmet());
