@@ -1,5 +1,5 @@
 import Product from "../model/product.model.js";
-
+import { AppError } from "../../../utils/AppError.js";
 export const createProduct = async (data) => {
   const product = await Product.create(data);
 
@@ -12,28 +12,34 @@ export const getProducts = async () => {
   return products;
 };
 
+export const getProductBySlug = async (productSlug) => {
+  const product = await Product.findOne({ productSlug });
+
+  if (!product) {
+    throw new AppError("Product not found", 404);
+  }
+
+  return product;
+};
+
 export const getProductById = async (id) => {
   const product = await Product.findById(id);
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new AppError("Product not found", 404);
   }
 
   return product;
 };
 
 export const updateProduct = async (id, data) => {
-  const product = await Product.findByIdAndUpdate(
-    id,
-    data,
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
+  const product = await Product.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  });
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new AppError("Product not found", 404);
   }
 
   return product;
@@ -43,7 +49,7 @@ export const deleteProduct = async (id) => {
   const product = await Product.findByIdAndDelete(id);
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new AppError("Product not found", 404);
   }
 
   return product;

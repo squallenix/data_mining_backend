@@ -1,165 +1,312 @@
 import Joi from "joi";
 
 const imageSchema = Joi.object({
-  url: Joi.string().uri().required(),
-  alt: Joi.string().allow("").default(""),
-  isPrimary: Joi.boolean().default(false),
-  sortOrder: Joi.number().integer().min(0).default(0),
+  url: Joi.string().uri().required().messages({
+    "string.empty": "Image URL is required",
+    "string.uri": "Image URL must be a valid URL",
+    "any.required": "Image URL is required",
+  }),
+
+  alt: Joi.string().allow("").default("").messages({
+    "string.base": "Image alt text must be a string",
+  }),
+
+  isPrimary: Joi.boolean().default(false).messages({
+    "boolean.base": "Image primary status must be true or false",
+  }),
+
+  sortOrder: Joi.number().integer().min(0).default(0).messages({
+    "number.base": "Image sort order must be a number",
+    "number.integer": "Image sort order must be an integer",
+    "number.min": "Image sort order cannot be negative",
+  }),
 });
 
 const variantSchema = Joi.object({
-  sku: Joi.string().allow(""),
-  name: Joi.string().allow(""),
+  sku: Joi.string().allow("").messages({
+    "string.base": "Variant SKU must be a string",
+  }),
 
-  attributes: Joi.object().default({}),
+  name: Joi.string().allow("").messages({
+    "string.base": "Variant name must be a string",
+  }),
 
-  price: Joi.number().min(0).required(),
+  attributes: Joi.object().default({}).messages({
+    "object.base": "Variant attributes must be an object",
+  }),
 
-  compareAtPrice: Joi.number().min(0).allow(null),
+  price: Joi.number().min(0).required().messages({
+    "number.base": "Variant price must be a number",
+    "number.min": "Variant price cannot be negative",
+    "any.required": "Variant price is required",
+  }),
 
-  costPrice: Joi.number().min(0).allow(null),
+  compareAtPrice: Joi.number().min(0).allow(null).messages({
+    "number.base": "Variant compare-at price must be a number",
+    "number.min": "Variant compare-at price cannot be negative",
+  }),
 
-  stock: Joi.number().integer().min(0).default(0),
+  costPrice: Joi.number().min(0).allow(null).messages({
+    "number.base": "Variant cost price must be a number",
+    "number.min": "Variant cost price cannot be negative",
+  }),
 
-  lowStockThreshold: Joi.number().integer().min(0).default(5),
+  stock: Joi.number().integer().min(0).default(0).messages({
+    "number.base": "Variant stock must be a number",
+    "number.integer": "Variant stock must be an integer",
+    "number.min": "Variant stock cannot be negative",
+  }),
 
-  images: Joi.array()
-    .items(imageSchema)
-    .default([]),
+  lowStockThreshold: Joi.number().integer().min(0).default(5).messages({
+    "number.base": "Variant low stock threshold must be a number",
+    "number.integer": "Variant low stock threshold must be an integer",
+    "number.min": "Variant low stock threshold cannot be negative",
+  }),
 
-  isActive: Joi.boolean().default(true),
+  images: Joi.array().items(imageSchema).default([]).messages({
+    "array.base": "Variant images must be an array",
+  }),
+
+  isActive: Joi.boolean().default(true).messages({
+    "boolean.base": "Variant active status must be true or false",
+  }),
 });
 
 const sourceSchema = Joi.object({
-  name: Joi.string().required(),
+  name: Joi.string().required().messages({
+    "string.base": "Source name must be a string",
+    "string.empty": "Source name is required",
+    "any.required": "Source name is required",
+  }),
 
-  externalId: Joi.string().allow(""),
+  externalId: Joi.string().allow("", null).messages({
+    "string.base": "Source external ID must be a string",
+  }),
 
-  url: Joi.string().uri().allow(""),
+  url: Joi.string().uri().allow("", null).messages({
+    "string.base": "Source URL must be a string",
+    "string.uri": "Source URL must be a valid URL",
+  }),
 
-  lastSyncedAt: Joi.date().allow(null),
+  lastSyncedAt: Joi.date().allow(null).messages({
+    "date.base": "Last synced date must be a valid date",
+  }),
 });
 
 export const createProductSchema = Joi.object({
-  name: Joi.string().trim().required(),
+  name: Joi.string().trim().required().messages({
+    "string.base": "Product name must be a string",
+    "string.empty": "Product name is required",
+    "any.required": "Product name is required",
+  }),
 
-  slug: Joi.string().trim().required(),
+  productSlug: Joi.string()
+    .trim()
+    .lowercase()
+    .required()
+    .messages({
+      "string.base": "Product slug must be a string",
+      "string.empty": "Product slug is required",
+      "any.required": "Product slug is required",
+    }),
 
-  description: Joi.string().allow("").default(""),
+  tags: Joi.array().items(Joi.string().trim().max(50)).default([]).messages({
+    "array.base": "Tags must be an array of strings",
+    "string.base": "Tag must be a string",
+  }),
 
-  shortDescription: Joi.string().allow("").default(""),
+  description: Joi.string().allow("").default("").messages({
+    "string.base": "Product description must be a string",
+  }),
 
-  brand: Joi.string().allow(null),
+  shortDescription: Joi.string().allow("").default("").messages({
+    "string.base": "Short description must be a string",
+  }),
 
-  categories: Joi.array()
-    .items(Joi.string())
-    .default([]),
+  brand: Joi.string().allow(null).messages({
+    "string.base": "Brand ID must be a string",
+  }),
 
-  sku: Joi.string().allow(""),
+  categories: Joi.array().items(Joi.string()).default([]).messages({
+    "array.base": "Categories must be an array",
+    "string.base": "Category ID must be a string",
+  }),
 
-  barcode: Joi.string().allow(""),
+  sku: Joi.string().allow("").messages({
+    "string.base": "SKU must be a string",
+  }),
 
-  mpn: Joi.string().allow(""),
+  barcode: Joi.string().allow("").messages({
+    "string.base": "Barcode must be a string",
+  }),
 
-  gtin: Joi.string().allow(""),
+  mpn: Joi.string().allow("").messages({
+    "string.base": "MPN must be a string",
+  }),
 
-  price: Joi.number().min(0).required(),
+  gtin: Joi.string().allow("").messages({
+    "string.base": "GTIN must be a string",
+  }),
 
-  compareAtPrice: Joi.number()
-    .min(0)
-    .allow(null),
+  price: Joi.number().min(0).required().messages({
+    "number.base": "Product price must be a number",
+    "number.min": "Product price cannot be negative",
+    "any.required": "Product price is required",
+  }),
 
-  currency: Joi.string()
-    .default("BDT"),
+  compareAtPrice: Joi.number().min(0).allow(null).messages({
+    "number.base": "Compare-at price must be a number",
+    "number.min": "Compare-at price cannot be negative",
+  }),
 
-  stock: Joi.number()
-    .integer()
-    .min(0)
-    .default(0),
+  currency: Joi.string().default("BDT").messages({
+    "string.base": "Currency must be a string",
+  }),
 
-  lowStockThreshold: Joi.number()
-    .integer()
-    .min(0)
-    .default(5),
+  stock: Joi.number().integer().min(0).default(0).messages({
+    "number.base": "Stock must be a number",
+    "number.integer": "Stock must be an integer",
+    "number.min": "Stock cannot be negative",
+  }),
 
-  trackInventory: Joi.boolean()
-    .default(true),
+  lowStockThreshold: Joi.number().integer().min(0).default(5).messages({
+    "number.base": "Low stock threshold must be a number",
+    "number.integer": "Low stock threshold must be an integer",
+    "number.min": "Low stock threshold cannot be negative",
+  }),
 
-  allowBackorder: Joi.boolean()
-    .default(false),
+  trackInventory: Joi.boolean().default(true).messages({
+    "boolean.base": "Track inventory must be true or false",
+  }),
 
-  images: Joi.array()
-    .items(imageSchema)
-    .default([]),
+  allowBackorder: Joi.boolean().default(false).messages({
+    "boolean.base": "Allow backorder must be true or false",
+  }),
 
-  specifications: Joi.object()
-    .default({}),
+  images: Joi.array().items(imageSchema).default([]).messages({
+    "array.base": "Images must be an array",
+  }),
 
-  attributes: Joi.object()
-    .default({}),
+  specifications: Joi.object().default({}).messages({
+    "object.base": "Specifications must be an object",
+  }),
 
-  hasVariants: Joi.boolean()
-    .default(false),
+  attributes: Joi.object().default({}).messages({
+    "object.base": "Attributes must be an object",
+  }),
 
-  variants: Joi.array()
-    .items(variantSchema)
-    .default([]),
+  hasVariants: Joi.boolean().default(false).messages({
+    "boolean.base": "Has variants must be true or false",
+  }),
+
+  variants: Joi.array().items(variantSchema).default([]).messages({
+    "array.base": "Variants must be an array",
+  }),
 
   weight: Joi.object({
-    value: Joi.number().min(0).allow(null),
-    unit: Joi.string()
-      .valid("g", "kg", "oz", "lb")
-      .default("kg"),
-  }).allow(null),
+    value: Joi.number().min(0).allow(null).messages({
+      "number.base": "Weight value must be a number",
+      "number.min": "Weight cannot be negative",
+    }),
+
+    unit: Joi.string().valid("g", "kg", "oz", "lb").default("kg").messages({
+      "any.only": "Weight unit must be one of: g, kg, oz, lb",
+    }),
+  })
+    .allow(null)
+    .messages({
+      "object.base": "Weight must be an object",
+    }),
 
   dimensions: Joi.object({
-    length: Joi.number().min(0).allow(null),
-    width: Joi.number().min(0).allow(null),
-    height: Joi.number().min(0).allow(null),
-    unit: Joi.string()
-      .valid("cm", "m", "in")
-      .default("cm"),
-  }).allow(null),
+    length: Joi.number().min(0).allow(null).messages({
+      "number.base": "Length must be a number",
+      "number.min": "Length cannot be negative",
+    }),
 
-  requiresShipping: Joi.boolean()
-    .default(true),
+    width: Joi.number().min(0).allow(null).messages({
+      "number.base": "Width must be a number",
+      "number.min": "Width cannot be negative",
+    }),
 
-  shippingClass: Joi.string()
-    .allow(null, ""),
+    height: Joi.number().min(0).allow(null).messages({
+      "number.base": "Height must be a number",
+      "number.min": "Height cannot be negative",
+    }),
+
+    unit: Joi.string().valid("cm", "m", "in").default("cm").messages({
+      "any.only": "Dimension unit must be one of: cm, m, in",
+    }),
+  })
+    .allow(null)
+    .messages({
+      "object.base": "Dimensions must be an object",
+    }),
+
+  requiresShipping: Joi.boolean().default(true).messages({
+    "boolean.base": "Requires shipping must be true or false",
+  }),
+
+  shippingClass: Joi.string().allow(null, "").messages({
+    "string.base": "Shipping class must be a string",
+  }),
 
   status: Joi.string()
     .valid("draft", "active", "archived")
-    .default("draft"),
+    .default("draft")
+    .messages({
+      "any.only": "Status must be one of: draft, active, archived",
+    }),
 
-  isVisible: Joi.boolean()
-    .default(true),
+  isVisible: Joi.boolean().default(true).messages({
+    "boolean.base": "Visibility must be true or false",
+  }),
 
   seo: Joi.object({
-    title: Joi.string().allow(""),
-    description: Joi.string().allow(""),
+    title: Joi.string().allow("").messages({
+      "string.base": "SEO title must be a string",
+    }),
+
+    description: Joi.string().allow("").messages({
+      "string.base": "SEO description must be a string",
+    }),
+
     keywords: Joi.array()
-      .items(Joi.string())
-      .default([]),
+      .items(
+        Joi.string().messages({
+          "string.base": "SEO keyword must be a string",
+        }),
+      )
+      .default([])
+      .messages({
+        "array.base": "SEO keywords must be an array",
+      }),
+  }).messages({
+    "object.base": "SEO must be an object",
   }),
 
   rating: Joi.object({
-    average: Joi.number()
-      .min(0)
-      .max(5)
-      .default(0),
+    average: Joi.number().min(0).max(5).default(0).messages({
+      "number.base": "Rating average must be a number",
+      "number.min": "Rating average cannot be below 0",
+      "number.max": "Rating average cannot exceed 5",
+    }),
 
-    count: Joi.number()
-      .integer()
-      .min(0)
-      .default(0),
+    count: Joi.number().integer().min(0).default(0).messages({
+      "number.base": "Rating count must be a number",
+      "number.integer": "Rating count must be an integer",
+      "number.min": "Rating count cannot be negative",
+    }),
+  }).messages({
+    "object.base": "Rating must be an object",
   }),
 
-  sources: Joi.array()
-    .items(sourceSchema)
-    .default([]),
+  sources: Joi.array().items(sourceSchema).default([]).messages({
+    "array.base": "Sources must be an array",
+  }),
 });
 
 export const updateProductSchema = createProductSchema.fork(
-  ["name", "slug", "price"],
+  ["name", "productSlug", "price"],
   (schema) => schema.optional(),
 );

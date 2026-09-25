@@ -1,6 +1,7 @@
 import {
   createProduct,
   getProducts,
+  getProductBySlug,
   getProductById,
   updateProduct,
   deleteProduct,
@@ -27,6 +28,21 @@ export const getProductsController = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: products,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductBySlugController = async (req, res, next) => {
+  try {
+    const product = await getProductBySlug(
+      req.params.productSlug,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: product,
     });
   } catch (error) {
     next(error);
