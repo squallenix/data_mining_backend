@@ -79,11 +79,11 @@ const sourceSchema = Joi.object({
     "any.required": "Source name is required",
   }),
 
-  externalId: Joi.string().allow("").messages({
+  externalId: Joi.string().allow("", null).messages({
     "string.base": "Source external ID must be a string",
   }),
 
-  url: Joi.string().uri().allow("").messages({
+  url: Joi.string().uri().allow("", null).messages({
     "string.base": "Source URL must be a string",
     "string.uri": "Source URL must be a valid URL",
   }),
