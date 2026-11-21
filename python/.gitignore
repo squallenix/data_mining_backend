@@ -1,4 +1,22 @@
-/.freebuff
-/data_mining_backend
-data_mining_backend
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Scraping cache & mined runtime data
+.freebuff/
 data/
+app/data/
+*.csv
+*.html
+latest_analytics.json
