@@ -34,20 +34,47 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
     lastRunAt: new Date().toISOString(),
   };
 
-  // Resolve Python script path from ENV or relative paths
-  const pythonScript =
-    process.env.PYTHON_SCRIPT_PATH ||
-    (fs.existsSync(path.resolve(process.cwd(), "../data_mining_python/app/run_mining.py"))
-      ? path.resolve(process.cwd(), "../data_mining_python/app/run_mining.py")
-      : fs.existsSync(path.resolve(process.cwd(), "python/app/run_mining.py"))
-      ? path.resolve(process.cwd(), "python/app/run_mining.py")
-      : fs.existsSync("e:\\Code\\data_mining_python\\app\\run_mining.py")
-      ? "e:\\Code\\data_mining_python\\app\\run_mining.py"
-      : path.resolve(process.cwd(), "app/run_mining.py"));
+  // 1. Resolve Python binary: support both "python" and "python3" automatically
+  let pythonBin = process.env.PYTHON_BIN;
+  if (!pythonBin) {
+    pythonBin = process.platform === "win32" ? "python" : "python3";
+  }
+  // On Linux/Docker, if "python" doesn't exist but "python3" does, automatically fallback to python3
+  if (process.platform !== "win32" && pythonBin === "python") {
+    if (!fs.existsSync("/usr/bin/python") && fs.existsSync("/usr/bin/python3")) {
+      pythonBin = "/usr/bin/python3";
+    }
+  }
 
-  const pythonBin = process.env.PYTHON_BIN || (process.platform === "win32" ? "python" : "python3");
+  // 2. Candidate locations for run_mining.py
+  const scriptCandidates = [
+    process.env.PYTHON_SCRIPT_PATH,
+    path.resolve(process.cwd(), "python/app/run_mining.py"),
+    path.resolve(process.cwd(), "app/run_mining.py"),
+    path.resolve(process.cwd(), "../data_mining_python/app/run_mining.py"),
+    "e:\\Code\\data_mining_python\\app\\run_mining.py",
+  ].filter(Boolean);
+
+  let pythonScript = null;
+  for (const candidate of scriptCandidates) {
+    const absPath = path.isAbsolute(candidate) ? candidate : path.resolve(process.cwd(), candidate);
+    if (fs.existsSync(absPath)) {
+      pythonScript = absPath;
+      break;
+    }
+  }
+
+  if (!pythonScript) {
+    const msg = `Could not locate run_mining.py. Checked: ${scriptCandidates.join(", ")}`;
+    console.error(`[Mining Error] ${msg}`);
+    miningState.status = "failed";
+    miningState.error = msg;
+    miningState.stage = "Python script missing";
+    return { started: false, message: msg, state: miningState };
+  }
+
   const port = process.env.PORT || 8001;
-  const backendUrl = process.env.INTERNAL_BACKEND_URL || `http://localhost:${port}`;
+  const backendUrl = process.env.INTERNAL_BACKEND_URL || `http://127.0.0.1:${port}`;
 
   const spawnArgs = [
     "-u",
@@ -63,12 +90,21 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
     spawnArgs.push("--features", String(features));
   }
 
-  const child = spawn(pythonBin, spawnArgs);
+  console.log(`[Mining Spawn] Spawning ${pythonBin} ${spawnArgs.join(" ")} in cwd: ${path.dirname(pythonScript)}`);
+
+  const child = spawn(pythonBin, spawnArgs, {
+    cwd: path.dirname(pythonScript),
+    env: {
+      ...process.env,
+      PYTHONUNBUFFERED: "1",
+      PYTHONPATH: path.dirname(pythonScript),
+    },
+  });
 
   child.on("error", (err) => {
     console.error(`[Python Spawn Error]:`, err);
     miningState.status = "failed";
-    miningState.error = err.message;
+    miningState.error = `Spawn error: ${err.message} (Binary: ${pythonBin}, Script: ${pythonScript})`;
     miningState.stage = "Failed to launch Python engine";
   });
 
@@ -113,7 +149,9 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
       miningState.logs.push("[COMPLETE] Mining job finished with exit code 0.");
     } else {
       miningState.status = "failed";
-      miningState.error = `Process exited with error code ${code}`;
+      if (!miningState.error) {
+        miningState.error = `Process exited with error code ${code}`;
+      }
       miningState.stage = "Mining job failed";
     }
   });
