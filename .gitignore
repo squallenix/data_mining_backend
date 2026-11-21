@@ -54,3 +54,23 @@ api.txt
 productCreationFlow.md
 orderCreationFlow.md
 invoiceModelFlow.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+.ipynb_checkpoints/
+.freebuff/
+
+# Mining runtime data outputs
+latest_analytics.json
+*.csv
+*.html
+python/data/
+python/app/data/

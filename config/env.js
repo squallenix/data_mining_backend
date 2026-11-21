@@ -9,6 +9,6 @@ export const env = {
 
 // validation
 if (!env.MONGO_URI) {
-  console.error("❌ MONGO_URI missing in .env");
+  console.error("[ENV] MONGO_URI missing in .env");
   process.exit(1);
 }
