@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+dotenv.config({ path: ".env.local", override: true });
 
 import express from "express";
 import cors from "cors";
@@ -23,11 +24,11 @@ app.use(router);
 
 // test route
 app.get("/", (req, res) => {
-  res.send("Server running 🚀");
+  res.send("Server running");
 });
 
 app.get("/api/v1", (req, res) => {
-  res.json({ message: "API v1 working ✅" });
+  res.json({ message: "API v1 working" });
 });
 
 // Must stay the LAST middleware: Express only searches forward from where
@@ -41,10 +42,10 @@ const startServer = async () => {
     await connectDB();
 
     app.listen(port, () => {
-      console.log("🚀 Server running on port", port);
+      console.log("[SERVER] Running on port", port);
     });
   } catch (err) {
-    console.error("❌ Server start failed:", err.message);
+    console.error("[SERVER] Start failed:", err.message);
   }
 };
 

@@ -137,15 +137,13 @@ const productSchema = new mongoose.Schema(
     },
 
     brand: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Brand",
+      type: mongoose.Schema.Types.Mixed,
       default: null,
     },
 
     categories: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
+        type: mongoose.Schema.Types.Mixed,
       },
     ],
 
@@ -207,14 +205,12 @@ const productSchema = new mongoose.Schema(
     },
 
     specifications: {
-      type: Map,
-      of: mongoose.Schema.Types.Mixed,
+      type: mongoose.Schema.Types.Mixed,
       default: {},
     },
 
     attributes: {
-      type: Map,
-      of: mongoose.Schema.Types.Mixed,
+      type: mongoose.Schema.Types.Mixed,
       default: {},
     },
 

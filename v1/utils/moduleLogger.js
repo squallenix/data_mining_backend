@@ -6,5 +6,5 @@ export function logModule(importMetaUrl) {
   const filename = fileURLToPath(importMetaUrl);
   const relative = path.relative(process.cwd(), filename);
 
-  // console.log(`🔵 moduleFileLoaded: ${relative}`);
+  // console.log(`[MODULE] moduleFileLoaded: ${relative}`);
 }

@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const versionsPath = __dirname;
 
 const versions = readdirSync(versionsPath).filter((f) => /^v\d+$/.test(f));
-console.log("📂 Found versions:", versions);
+console.log("[ROUTER] Found versions:", versions);
 
 for (const version of versions) {
   const modulesPath = join(versionsPath, version, "modules");
@@ -18,7 +18,7 @@ for (const version of versions) {
   try {
     modules = readdirSync(modulesPath);
   } catch (err) {
-    console.log(`⚠️  No modules folder in ${version}`);
+    console.log(`[ROUTER] No modules folder in ${version}`);
     continue;
   }
 
@@ -30,9 +30,9 @@ for (const version of versions) {
         pathToFileURL(routeFile).href
       );
       router.use(`/api/${version}/${mod}`, moduleRouter);
-      console.log(`✅ Loaded: /api/${version}/${mod}`);
+      console.log(`[ROUTER] Loaded: /api/${version}/${mod}`);
     } catch (err) {
-      console.log(`❌ Failed to load ${mod}:`, err);
+      console.log(`[ROUTER] Failed to load ${mod}:`, err);
     }
   }
 }

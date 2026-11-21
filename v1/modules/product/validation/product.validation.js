@@ -123,14 +123,9 @@ export const createProductSchema = Joi.object({
     "string.base": "Short description must be a string",
   }),
 
-  brand: Joi.string().allow(null).messages({
-    "string.base": "Brand ID must be a string",
-  }),
+  brand: Joi.alternatives().try(Joi.string(), Joi.object()).allow(null, "").default("Unknown"),
 
-  categories: Joi.array().items(Joi.string()).default([]).messages({
-    "array.base": "Categories must be an array",
-    "string.base": "Category ID must be a string",
-  }),
+  categories: Joi.array().items(Joi.alternatives().try(Joi.string(), Joi.object())).default([]),
 
   sku: Joi.string().allow("").messages({
     "string.base": "SKU must be a string",
@@ -304,9 +299,9 @@ export const createProductSchema = Joi.object({
   sources: Joi.array().items(sourceSchema).default([]).messages({
     "array.base": "Sources must be an array",
   }),
-});
+}).unknown(true);
 
 export const updateProductSchema = createProductSchema.fork(
   ["name", "productSlug", "price"],
   (schema) => schema.optional(),
-);
+).unknown(true);
