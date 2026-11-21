@@ -108,6 +108,8 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
     miningState.stage = "Failed to launch Python engine";
   });
 
+  let stderrBuffer = "";
+
   child.stdout.on("data", (data) => {
     const text = data.toString();
     const lines = text.split("\n").filter((l) => l.trim());
@@ -115,6 +117,10 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
       console.log(`[Python Mine]: ${line}`);
       miningState.logs.push(line);
       if (miningState.logs.length > 100) miningState.logs.shift();
+
+      if (line.includes("[ERROR]")) {
+        miningState.error = line.replace("[ERROR]", "").trim();
+      }
 
       if (line.includes("[Stage 1/5]")) {
         miningState.progress = 20;
@@ -139,6 +145,7 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
     const errText = data.toString();
     console.error(`[Python Err]: ${errText}`);
     miningState.logs.push(`[WARN] ${errText}`);
+    stderrBuffer += errText;
   });
 
   child.on("close", (code) => {
@@ -150,7 +157,12 @@ export const startMiningJob = (targetUrl, maxProducts = 30, features = null) => 
     } else {
       miningState.status = "failed";
       if (!miningState.error) {
-        miningState.error = `Process exited with error code ${code}`;
+        const meaningfulLines = stderrBuffer
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l && !l.startsWith("Traceback") && !l.startsWith('File "') && !l.startsWith("^") && !l.startsWith("[notice]"));
+        const lastErr = meaningfulLines.pop();
+        miningState.error = lastErr || `Process exited with error code ${code}`;
       }
       miningState.stage = "Mining job failed";
     }
